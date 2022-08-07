@@ -84,7 +84,8 @@ def flag_to_colon(code: str) -> str:
 def plot_map(tc_directory: os.PathLike | str = '..',
              projection_version: int = 1,
              station_sizes = (2.8, 1.6, 1.2, 1.2, 1.2, 0.4, 0.4),
-             out_file: str = "map_plot.svg"):
+             out_file: str = "map_plot.svg",
+             font_scale: float = 1.1):
     station_json = TcFile('Station', tc_directory)
     path_json = TcFile('Path', tc_directory)
     for station in station_json.data:
@@ -100,7 +101,8 @@ def plot_map(tc_directory: os.PathLike | str = '..',
     for (route_x, route_y) in route_xy:
         plt.plot(route_x, route_y, color='teal', linewidth=0.1)
     for x, y, s, text in zip(x, y, s, codes):
-        plt.text(x + 1, y + 4, text, fontsize=s * 1.1 / max(station_sizes))
+        if font_scale > 0.0:
+            plt.text(x + 1, y + 4, text, fontsize=s * font_scale / max(station_sizes))
     plt.gca().invert_yaxis()
     plt.gca().set_aspect('equal', adjustable='box')
     plt.rcParams['font.family'] = ['sans-serif']
@@ -121,8 +123,15 @@ if __name__ == '__main__':
                              " 0 - Linear von WGS84\n"
                              " 1 - Direkte Projektion auf EPSG:3035\n"
                              " 2 - Von WGS84 auf EPSG:3035\n")
+    parser.add_argument('--font_scale', type=float,
+                        default=1.1,
+                        help="Wie groß der RIL Code gerendert werden soll:\n"
+                             " 0.0 - garnicht\n"
+                             " 0.1 - winzig\n"
+                             " 0.3 - klein\n" 
+                             " 1.1 - normal / default\n"
+                             " 2.2 - riesig\n")
     args = parser.parse_args()
     if args.out_file is None:
         args.out_file = os.path.join(args.tc_directory, "map_plot.svg")
-    plot_map(tc_directory=args.tc_directory, out_file=args.out_file)
-
+    plot_map(tc_directory=args.tc_directory, out_file=args.out_file, font_scale=args.font_scale)
